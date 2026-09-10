@@ -1217,4 +1217,4 @@ function createGame(canvas, width, height, assets) {
   };
 }
 
-module.exports = { createGame, SCENES };
+module.exports = { createGame, SCENES, AssetStore };
