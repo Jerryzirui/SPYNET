@@ -5,6 +5,9 @@ ssh_debug.log
 ssh_test.txt
 *.log
 
+# 本地调试产物
+outputs/
+
 # 系统文件
 Thumbs.db
 .DS_Store
