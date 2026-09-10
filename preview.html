@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+  <title>谍网 SPYNET — 预览</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
+      width: 100%; height: 100%;
+      background: #050807;
+      overflow: hidden;
+      touch-action: none;
+      user-select: none;
+      -webkit-user-select: none;
+      margin: 0;
+    }
+    canvas {
+      display: block;
+      position: absolute;
+      left: 0;
+      top: 0;
+      background: #050807;
+    }
+  </style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<script>
+(function () {
+  // 预览固定手机画布，避免 headless 视口尺寸不一致导致裁切
+  var VIEW_W = 390;
+  var VIEW_H = 844;
+  var canvas = document.getElementById('c');
+  canvas.width = VIEW_W;
+  canvas.height = VIEW_H;
+  canvas.style.width = VIEW_W + 'px';
+  canvas.style.height = VIEW_H + 'px';
+
+  window.wx = {
+    createCanvas: function () { return canvas; },
+    getSystemInfoSync: function () {
+      return { windowWidth: VIEW_W, windowHeight: VIEW_H, pixelRatio: 1 };
+    },
+    onTouchStart: function () {},
+    onTouchEnd: function () {},
+    onShow: function () {},
+    onHide: function () {}
+  };
+})();
+</script>
+<script src="preview-modules.js?v=3"></script>
+<script>
+(function () {
+  var scenes = window.__spyNetRequire('./js/scenes');
+  var createGame = scenes.createGame;
+  var AssetStore = scenes.AssetStore;
+  var canvas = document.getElementById('c');
+  var assets = new AssetStore();
+  var game = createGame(canvas, canvas.width, canvas.height, assets);
+  window.__spyNetGame = game;
+
+  function handle(clientX, clientY) {
+    var rect = canvas.getBoundingClientRect();
+    game.onTouchStart(clientX - rect.left, clientY - rect.top);
+  }
+
+  canvas.addEventListener('mousedown', function (e) {
+    handle(e.clientX, e.clientY);
+  });
+  canvas.addEventListener('touchstart', function (e) {
+    e.preventDefault();
+    var t = e.touches[0];
+    if (t) handle(t.clientX, t.clientY);
+  }, { passive: false });
+
+  game.start();
+  assets.load('assets/');
+  try { game.state.audio.load('assets/audio/'); } catch (e) {}
+  game._internal.skipBoot();
+
+  var params = new URLSearchParams(window.location.search);
+  var demo = params.get('demo');
+  if (demo === 'game' || demo === 'play') {
+    game._internal.startGame(params.get('mode') || 'solo');
+  }
+  if (demo === 'mode') {
+    game.state.scene = 'mode';
+  }
+  if (demo === 'play') {
+    var n = 0;
+    function tick() {
+      if (n >= 3) return;
+      var st = game.state;
+      if (st.scene === 'game' && st.game && st.game.phase === 'select' && !st.game.player.played) {
+        var hand = st.game.player.hand;
+        if (hand.length) {
+          st.selectedUid = hand[0].uid;
+          game._internal.tryPlaySelected();
+          n += 1;
+        }
+      }
+      setTimeout(tick, 2200);
+    }
+    setTimeout(tick, 1000);
+  }
+})();
+</script>
+</body>
+</html>

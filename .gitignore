@@ -1,0 +1,10 @@
+# 构建产物与临时文件
+preview-modules.js.js
+preview-modules.js_1.js
+ssh_debug.log
+ssh_test.txt
+*.log
+
+# 系统文件
+Thumbs.db
+.DS_Store
