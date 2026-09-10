@@ -54,7 +54,7 @@
 (function () {
   var scenes = window.__spyNetRequire('./js/scenes');
   var createGame = scenes.createGame;
-  var AssetStore = scenes.AssetStore;
+  var AssetStore = scenes.AssetStore || window.__spyNetRequire('./js/assets').AssetStore;
   var canvas = document.getElementById('c');
   var assets = new AssetStore();
   var game = createGame(canvas, canvas.width, canvas.height, assets);
