@@ -15,11 +15,13 @@
       -webkit-user-select: none;
       margin: 0;
     }
+    body {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
     canvas {
       display: block;
-      position: absolute;
-      left: 0;
-      top: 0;
       background: #050807;
     }
   </style>
@@ -28,14 +30,12 @@
 <canvas id="c"></canvas>
 <script>
 (function () {
-  // 预览固定手机画布，避免 headless 视口尺寸不一致导致裁切
+  // 游戏内部逻辑分辨率固定，外层按视口等比缩放居中
   var VIEW_W = 390;
   var VIEW_H = 844;
   var canvas = document.getElementById('c');
   canvas.width = VIEW_W;
   canvas.height = VIEW_H;
-  canvas.style.width = VIEW_W + 'px';
-  canvas.style.height = VIEW_H + 'px';
 
   window.wx = {
     createCanvas: function () { return canvas; },
@@ -52,6 +52,8 @@
 <script src="preview-modules.js?v=3"></script>
 <script>
 (function () {
+  var VIEW_W = 390;
+  var VIEW_H = 844;
   var scenes = window.__spyNetRequire('./js/scenes');
   var createGame = scenes.createGame;
   var AssetStore = scenes.AssetStore || window.__spyNetRequire('./js/assets').AssetStore;
@@ -60,9 +62,24 @@
   var game = createGame(canvas, canvas.width, canvas.height, assets);
   window.__spyNetGame = game;
 
+  // 视口等比缩放：保持 390:844 比例，居中显示，任何窗口/手机都自适应
+  function fit() {
+    var vw = window.innerWidth;
+    var vh = window.innerHeight;
+    var scale = Math.min(vw / VIEW_W, vh / VIEW_H);
+    canvas.style.width = Math.floor(VIEW_W * scale) + 'px';
+    canvas.style.height = Math.floor(VIEW_H * scale) + 'px';
+  }
+  fit();
+  window.addEventListener('resize', fit);
+  window.addEventListener('orientationchange', fit);
+
+  // 触摸/点击坐标按实际缩放比例换算回游戏坐标
   function handle(clientX, clientY) {
     var rect = canvas.getBoundingClientRect();
-    game.onTouchStart(clientX - rect.left, clientY - rect.top);
+    var x = (clientX - rect.left) * (canvas.width / rect.width);
+    var y = (clientY - rect.top) * (canvas.height / rect.height);
+    game.onTouchStart(x, y);
   }
 
   canvas.addEventListener('mousedown', function (e) {
