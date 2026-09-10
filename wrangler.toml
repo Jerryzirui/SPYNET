@@ -1,0 +1,6 @@
+# Cloudflare 静态资产部署配置
+name = "spynet"
+compatibility_date = "2026-08-01"
+
+[assets]
+directory = "./"
