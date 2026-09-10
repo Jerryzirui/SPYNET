@@ -64,4 +64,31 @@ AudioManager.prototype.setEnabled = function setEnabled(on) {
   this.enabled = !!on;
 };
 
+
+AudioManager.prototype.playBgm = function playBgm() {
+  if (!this.enabled || this._bgmPlaying) return;
+  if (isWx()) {
+    if (!this._bgm) {
+      this._bgm = wx.createInnerAudioContext();
+      this._bgm.src = this.base + 'bgm.wav';
+      this._bgm.loop = true;
+      this._bgm.obeyMuteSwitch = false;
+    }
+    try { this._bgm.play(); } catch (e) {}
+  } else {
+    if (!this._bgm) this._bgm = new Audio(this.base + 'bgm.wav');
+    this._bgm.loop = true;
+    this._bgm.currentTime = 0;
+    try { var p = this._bgm.play(); if (p && p.catch) p.catch(function() {}); } catch (e) {}
+  }
+  this._bgmPlaying = true;
+};
+
+AudioManager.prototype.stopBgm = function stopBgm() {
+  if (!this._bgm || !this._bgmPlaying) return;
+  this._bgmPlaying = false;
+  if (isWx()) { try { this._bgm.stop(); } catch (e) {} }
+  else { try { this._bgm.pause(); this._bgm.currentTime = 0; } catch (e) {} }
+};
+
 module.exports = { AudioManager, SOUNDS };

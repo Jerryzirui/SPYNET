@@ -1135,7 +1135,8 @@ function createGame(canvas, width, height, assets) {
         state.scene = SCENES.TITLE;
       }
     }
-    if (state.scene === SCENES.TITLE) state.titleT += dt;
+    if (state.scene === SCENES.TITLE) { state.titleT += dt; if (state.audio && !state._bgmPlaying) { state.audio.playBgm(); state._bgmPlaying = true; } }
+    else if (state._bgmPlaying) { if (state.audio) state.audio.stopBgm(); state._bgmPlaying = false; }
     if (state.shake > 0) state.shake = Math.max(0, state.shake - dt);
     if (state.flash > 0) state.flash = Math.max(0, state.flash - dt);
     toast.update(dt);
